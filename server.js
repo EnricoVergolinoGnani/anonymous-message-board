@@ -1,56 +1,33 @@
 'use strict';
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
 
-const apiRoutes = require('./routes/api.js');
-const fccTestingRoutes = require('./routes/fcctesting.js');
-const runner = require('./test-runner');
+var express     = require('express');
+var bodyParser  = require('body-parser');
+var expect      = require('chai').expect;
+var cors        = require('cors');
 
-const app = express();
+var apiRoutes         = require('./routes/api.js');
+var fccTestingRoutes  = require('./routes/fcctesting.js');
+var runner            = require('./test-runner');
+
+let helmet = require('helmet')
+
+var app = express();
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
-app.use(cors({ origin: '*' })); //For FCC testing purposes only
+app.use(cors({origin: '*'})); //For FCC testing purposes only
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-
-
-// ***************************************************** //
-// helmet 
-const helmet = require("helmet")
-
-app.use(
-  helmet.frameguard({
-    action: "sameorigin",
-  })
-);
-
+app.use(helmet.frameguard({
+	action: 'sameorigin'
+}))
 app.use(helmet.dnsPrefetchControl({
-  allow: false
+	allow: false
 }))
-
 app.use(helmet.referrerPolicy({
-  policy: ["same-origin"],
+	policy: 'same-origin'
 }))
-
-
-// ***************************************************** //
-// to connect mongoose
-const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://enricovgnani:' + process.env['DB'] + '@freecodecamp.gxcxe.mongodb.net/?retryWrites=true&w=majority&appName=freeCodeCamp')
-  .then(() => {
-    console.log('Mongoose connected')
-  })
-  .catch((err) => {
-    console.log('error', err)
-  })
-
-
-// ***************************************************** //
 
 //Sample front-end
 app.route('/b/:board/')
@@ -74,24 +51,28 @@ fccTestingRoutes(app);
 //Routing for API 
 apiRoutes(app);
 
+//Sample Front-end
+
+    
 //404 Not Found Middleware
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
   res.status(404)
     .type('text')
     .send('Not Found');
 });
 
 //Start our server and tests!
-const listener = app.listen(process.env.PORT || 3000, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
-  if (process.env.NODE_ENV === 'test') {
+app.listen(process.env.PORT || 3000, function () {
+  console.log("Listening on port " + process.env.PORT);
+  if(process.env.NODE_ENV==='test') {
     console.log('Running Tests...');
     setTimeout(function () {
       try {
         runner.run();
-      } catch (e) {
-        console.log('Tests are not valid:');
-        console.error(e);
+      } catch(e) {
+        var error = e;
+          console.log('Tests are not valid:');
+          console.log(error);
       }
     }, 1500);
   }
