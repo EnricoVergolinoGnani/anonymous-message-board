@@ -41,7 +41,7 @@ app.use(helmet.referrerPolicy({
 // ***************************************************** //
 // to connect mongoose
 const mongoose = require('mongoose')
-mongoose.connect(process.env['DB'])
+mongoose.connect('mongodb+srv://enricovgnani:' + process.env['DB'] + '@freecodecamp.gxcxe.mongodb.net/?retryWrites=true&w=majority&appName=freeCodeCamp')
   .then(() => {
     console.log('Mongoose connected')
   })
