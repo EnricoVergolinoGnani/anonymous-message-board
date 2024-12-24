@@ -31,7 +31,7 @@ module.exports = function (app) {
           console.log("newBoard", newBoard);
           newBoard.threads.push(newThread);
           newBoard.save((err, data) => {
-            console.log("newBOardData", data);
+            console.log("newBoardData", data);
             if (err || !data) {
               console.log(err);
               res.send("There was an error saving in post")
