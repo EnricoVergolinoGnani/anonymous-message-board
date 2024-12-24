@@ -1,28 +1,14 @@
 'use strict';
-
-var express     = require('express');
-var bodyParser  = require('body-parser');
-var expect      = require('chai').expect;
-var cors        = require('cors');
-
-var apiRoutes         = require('./routes/api.js');
-var fccTestingRoutes  = require('./routes/fcctesting.js');
-var runner            = require('./test-runner');
-const helmet = require('helmet');
-const MongoClient = require('mongodb').MongoClient;
 require('dotenv').config();
+const express     = require('express');
+const bodyParser  = require('body-parser');
+const cors        = require('cors');
 
-const CONNECTION_STRING =  process.env.DB;
+const apiRoutes         = require('./routes/api.js');
+const fccTestingRoutes  = require('./routes/fcctesting.js');
+const runner            = require('./test-runner');
 
-var app = express();
-
-app.use(helmet());
-//Sets frameguard, prevent clickjacking
-app.use(helmet.frameguard({action: 'deny'}));
-//sets 'X-DNS-Prefetch-Control: off
-app.use(helmet.dnsPrefetchControl());
-//sets 'referrer-policy: same origin'
-app.use(helmet.referrerPolicy({policy: 'same-origin'}));
+const app = express();
 
 app.use('/public', express.static(process.cwd() + '/public'));
 
@@ -53,17 +39,6 @@ fccTestingRoutes(app);
 //Routing for API 
 apiRoutes(app);
 
-MongoClient.connect(CONNECTION_STRING)
-.then(client=> {
-  const db = client.db('message-board');
-  const collection = db.collection('board_threads');
-  app.locals.db = db;
-}).catch(error=>console.log(error)
-);
-
-//Sample Front-end
-
-    
 //404 Not Found Middleware
 app.use(function(req, res, next) {
   res.status(404)
@@ -72,17 +47,16 @@ app.use(function(req, res, next) {
 });
 
 //Start our server and tests!
-app.listen(8000, function () {
-  console.log("Listening on port 8000");
+const listener = app.listen(process.env.PORT || 3000, function () {
+  console.log('Your app is listening on port ' + listener.address().port);
   if(process.env.NODE_ENV==='test') {
     console.log('Running Tests...');
     setTimeout(function () {
       try {
         runner.run();
       } catch(e) {
-        var error = e;
-          console.log('Tests are not valid:');
-          console.log(error);
+        console.log('Tests are not valid:');
+        console.error(e);
       }
     }, 1500);
   }
